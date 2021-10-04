@@ -4,14 +4,14 @@ README file for https://github.com/pmadleydowd/VitaminD_and_Autism.git
 *******************************************************************************************
 Authors: 
 *******************************************************************************************
-Paul Madley-Dowd+,1, Christina Dardani 1, Robyn Wootton 2,3, Kyle Dack 1,2, Tom Palmer 2,4, Dheeraj Rai 1,5
+Paul Madley-Dowd 1, Christina Dardani 1, Robyn Wootton 2,3, Kyle Dack 1,2, Tom Palmer 2,4, Dheeraj Rai 1,5
 
 * 1 Centre for Academic Mental Health, Population Health Sciences, Bristol Medical School, University of Bristol, Bristol, United Kingdom
 * 2 MRC Integrative Epidemiology Unit, Population Health Sciences, Bristol Medical School, University of Bristol, Bristol, United Kingdom
 * 3 Nic Waals Institute, Lovisenberg Diaconal Hospital, Oslo, Norway
 * 4 Department of Mathematics and Statistics, Lancaster University, Lancaster, United Kingdom
 * 5 Avon and Wiltshire Partnership NHS Mental Health Trust, Bristol, United Kingdom
-* + Corresponding author: Dr Paul Madley-Dowd, Postal address: Bristol Medical School, Oakfield House, Oakfield Grove, Bristol BS8 2BN; email address: p.madley-dowd@bristol.ac.uk 
+* Corresponding author: Dr Paul Madley-Dowd, Postal address: Bristol Medical School, Oakfield House, Oakfield Grove, Bristol BS8 2BN; email address: p.madley-dowd@bristol.ac.uk 
 
 
 *******************************************************************************************
