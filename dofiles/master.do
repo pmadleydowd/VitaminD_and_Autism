@@ -15,12 +15,11 @@
 ********************************************************************************
 * 1 - Run global.do - sets the directories for project
 ********************************************************************************
-do "C:\Users\pm0233\OneDrive - University of Bristol\Documents\Projects\Vit D\Analysis\dofiles\global.do"
+do "YOURPATH\global.do"
 
 ********************************************************************************
 * 2 - Create datasets
 ********************************************************************************
-do "$Dodir\cr_compilevitdPRS.do"		// Puts the PRS data into .dta format
 do "$Dodir\cr_initial_dataset.do"		// Create the initial ALSPAC sample
 do "$Dodir\cr_derived_dataset.do"		// Create all derived variables 
 
@@ -38,6 +37,11 @@ do "$Dodir\an_incexc_desc_stats.do" 	 // Create outputs for descriptive statisti
 do "$Dodir\an_observational.do"	
 do "$Dodir\an_MI_observational.do"		// analyses using multiple imputation to account for missing data
 
+do "$Dodir\an_observational_catexp.do" // repeat of observational analyses using a categorical exposure variable 
+
+do "$Dodir\an_observational_european.do"	 // repeat of observational analyses restricted to those of european ancestry
+do "$Dodir\an_MI_observational_european.do"	 // repeat of observational analyses restricted to those of european ancestry
+
 ********************************************************************************
 * 5 - Run Spline analyses
 ********************************************************************************
@@ -52,11 +56,11 @@ do "$Dodir\an_spline_sensitivity.do" // sensitivity analyses using different num
 * 7 - Run MR analyses 
 ********************************************************************************
 do "$Dodir\an_MR.do"
+do "$Dodir\an_MR_figures.do"   // create figures for publication (code initially created by Flo Martin - https://github.com/flozoemartin) 
 
 ********************************************************************************
 * 8 - Run sensitivity analyses for MR models
 ********************************************************************************
 do "$Dodir\an_desc_PRS_conf.do"		// Create descriptives for association of PRS with each confounder
-do "$Dodir\an_sens_PRS_check.do"	// Perform sensitivity analyses to check different p-value thresholds
-do "$Dodir\an_MR_sensitivity.do" // Perform sensitivity analyses with genetic risk scores created using different p value thresholds
+
 

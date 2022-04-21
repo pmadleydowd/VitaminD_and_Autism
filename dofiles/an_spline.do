@@ -9,6 +9,7 @@ log using "$Logdir\LOG_an_spline.txt", text replace
 * 1 Set up environment and read in data
 * 2 Perform spline analyses for logistic regression models
 * 3 Perform spline analyses for linear regression models
+* 4 Combine plots
 
 ********************************************************************************
 * 1 Set up environment and read in data
@@ -18,57 +19,70 @@ ssc install xbrcspline
 cd "$Datadir\Spline analysis"
 use "$Datadir\DERIVED_VitD_dat.dta", clear
 
-keep if flag_mat_white_eth	== 1
-keep if flag_alive1yr 		== 1
-keep if flag_singleton		== 1
-keep if flag_outcomeany 	== 1
-keep if miss_exposure		== 0 
-	
+keep if flag_inclusion 		== 1
 
 		
 ********************************************************************************
 * 2 Perform spline analyses for logistic regression models
 ********************************************************************************
 * Create splines
-gen rnd_sadj = round(sadj_vitd_10,0.01)	
+gen rnd_sadj = round(sa_20wk_VitDtot_10,0.01)	
 
 mkspline sadj_spline = rnd_sadj, nknots(5) cubic displayknots
 mat sadj_knots = r(knots)	
 
-* Create model 	
+* Create model 
+local i = 0	
 foreach outcome in ASD bin_scdc bin_coh bin_repbehaviour bin_sociability {
 
+	local i = `i'+ 1
+	
 	logistic `outcome' sadj_spline* i.male i.matEdDrv i.finDifDrv i.manual prepregBMI matage i.mat_smok_bin18wk i.parity_cat
 
 	levelsof rnd_sadj
-	xbrcspline sadj_spline, matknots(sadj_knots) values(`r(levels)') ref(6.13) gen(vitd est1 lci1 uci1) eform 
+	xbrcspline sadj_spline, matknots(sadj_knots) values(`r(levels)') ref(5.87) gen(vitd est1 lci1 uci1) eform 
 
 				
 	gen yline=1 if vitd~=. 
+	
+	if "`outcome'" == "ASD" {
+		local tit = "Diagnosed Autism"
+	}
+	else if "`outcome'" == "bin_scdc" {
+		local tit = "Social Communication Trait"
+	}
+	else if "`outcome'" == "bin_coh" {
+		local tit = "Speech Coherence Trait"
+	}
+	else if "`outcome'" == "bin_repbehaviour" {
+		local tit = "Repetitive Behaviour Trait"
+	}
+	else if "`outcome'" == "bin_sociability" {
+		local tit = "Sociability Temperament Trait"
+	}
+	
 
-	twoway (area uci1 vitd, yscale(log) color(gs10)) (area lci1 vitd, yscale(log) color(white)) || /*
-	*/ line est1 vitd, yscale(log) lwidth(thick) lcolor(black) legend(off) /*
+	twoway (rarea lci1 uci1 vitd, yscale(log range(0.2 8)) color(gs10))  || /*
+	*/ line est1 vitd, yscale(log) lwidth(medium) lcolor(black) legend(off) /*
 	*/ graphregion(color(white) lwidth(large)) /*
 	*/ plotregion(color(white) icolor(white) lwidth(large)) /*
-	*/ xtitle("{fontface calibri:Adjusted vitamin D, nmol/L}", size(medlarge)) /*
-	*/ ytitle("{fontface calibri:Odds ratio with shading for 95% CI}", size(medlarge)) /*
+	*/ title("`tit'", size(small)) /*
+	*/ xtitle("{fontface calibri:Maternal 25(OH)D (nMol/L)}" "{fontface calibri: adjusted to 20 weeks}", size(med)) /*
+	*/ ytitle("{fontface calibri:Odds ratio and 95% CI}", size(medlarge)) /*
 	*/ ylabel(5 "{fontface calibri:5}" 2 "{fontface calibri:2}" 1 "{fontface calibri:1}" /*
-	*/ 0.5 "{fontface calibri:0.5}" 0.1 "{fontface calibri:0.1}"  /*
+	*/ 0.5 "{fontface calibri:0.5}" 0.2 "{fontface calibri:0.2}"  /*
 	*/ , angle(0) nogrid) /*
 	*/ xlabel(0 "{fontface calibri:0}" /*
-	*/  2 "{fontface calibri:20}" /*
 	*/  4 "{fontface calibri:40}" /*
-	*/  6 "{fontface calibri:60}" /*
 	*/  8 "{fontface calibri:80}" /*
-	*/  10"{fontface calibri:100}" /*
 	*/  12"{fontface calibri:120}" /*
-	*/  14"{fontface calibri:140}" /*
 	*/  16"{fontface calibri:160}" /*	
-	*/  18"{fontface calibri:180}" /*
 	*/  20"{fontface calibri:200}" /*
-	*/  22"{fontface calibri:220}" /*	
-	*/   , angle(0) labsize(medsmall) nogrid) || /*
-	*/ line yline vitd, lwidth(med) lcolor(red) lpattern(shortdash)
+	*/  24 "{fontface calibri:240}" /*	
+	*/  28 "{fontface calibri:280}" /*		
+	*/   , angle(45) labsize(medsmall) nogrid) || /*
+	*/ line yline vitd, lwidth(med) lcolor(red) lpattern(shortdash) /*
+	*/ name(fig`i', replace)
 				
 	graph display, ysize(20) xsize(16)
 	graph export "$Graphdir\spline_sadj_`outcome'.tif", height(2000) width(1600) replace
@@ -84,18 +98,22 @@ foreach outcome in ASD bin_scdc bin_coh bin_repbehaviour bin_sociability {
 regress zmf_asd sadj_spline* i.male i.matEdDrv i.finDifDrv i.manual prepregBMI matage i.mat_smok_bin18wk i.parity_cat
 
 levelsof rnd_sadj
-xbrcspline sadj_spline, matknots(sadj_knots) values(`r(levels)') ref(6.13) gen(vitd est1 lci1 uci1) 
+xbrcspline sadj_spline, matknots(sadj_knots) values(`r(levels)') ref(5.87) gen(vitd est1 lci1 uci1) 
+
+	
 
 			
 gen yline = 0 if vitd~=. 
 
-twoway (area uci1 vitd, color(gs10)) (area lci1 vitd, color(gs10)) || /*
-*/ line est1 vitd, lwidth(thick) lcolor(black) legend(off) /*
+twoway (rarea lci1 uci1 vitd, color(gs10))  || /*
+*/ line est1 vitd, lwidth(medium) lcolor(black) legend(off) /*
 */ graphregion(color(white) lwidth(large)) /*
 */ plotregion(color(white) icolor(white) lwidth(large)) /*
-*/ xtitle("{fontface calibri:Adjusted vitamin D, nmol/L}", size(medlarge)) /*
-*/ ytitle("{fontface calibri:Mean difference with shading for 95% CI}", size(medlarge)) /*
-*/ ylabel(0.3 "{fontface calibri:0.3}" /*
+*/ title("Mean Autism Factor Score", size(small)) 	/*
+*/ xtitle("{fontface calibri:Maternal 25(OH)D (nMol/L)}" "{fontface calibri: adjusted to 20 weeks}", size(med)) /*
+*/ ytitle("{fontface calibri:Mean difference and 95% CI}", size(medlarge)) /*
+*/ ylabel(0.4 "{fontface calibri:0.4}" /*
+*/		  0.3 "{fontface calibri:0.3}" /*
 */ 	 	  0.2 "{fontface calibri:0.2}" /*
 */  	  0.1 "{fontface calibri:0.1}" /*
 */    	  0    "{fontface calibri:0}" /*
@@ -103,24 +121,30 @@ twoway (area uci1 vitd, color(gs10)) (area lci1 vitd, color(gs10)) || /*
 */ 		 -0.2 "{fontface calibri:-0.2}"  /*
 */ , angle(0) nogrid) /*
 */ xlabel(0 "{fontface calibri:0}" /*
-*/  	  2 "{fontface calibri:20}" /*
 */  	  4 "{fontface calibri:40}" /*
-*/  	  6 "{fontface calibri:60}" /*
 */  	  8 "{fontface calibri:80}" /*
-*/       10 "{fontface calibri:100}" /*
 */  	 12 "{fontface calibri:120}" /*
-*/  	 14 "{fontface calibri:140}" /*
 */  	 16 "{fontface calibri:160}" /*	
-*/  	 18 "{fontface calibri:180}" /*
 */  	 20 "{fontface calibri:200}" /*
-*/  	 22 "{fontface calibri:220}" /*	
-*/   , angle(0) labsize(medsmall) nogrid) || /*
-*/ line yline vitd, lwidth(med) lcolor(red) lpattern(shortdash)
+*/  	 24 "{fontface calibri:240}" /*	
+*/	     28 "{fontface calibri:280}" /*	
+*/   , angle(45) labsize(medsmall) nogrid) || /*
+*/ line yline vitd, lwidth(med) lcolor(red) lpattern(shortdash) /*
+*/ name(fig6, replace)
 			
 graph display, ysize(20) xsize(16)
 graph export "$Graphdir\spline_sadj_fm.tif", height(2000) width(1600) replace
 	
 drop vitd est1 lci1 uci1 yline
+
+
+********************************************************************************
+* 4 Combine plots
+********************************************************************************
+
+graph combine fig1 fig2 fig3 fig4 fig5 fig6 , cols(3)
+graph export "$Graphdir\spline_combined.tif", height(2000) width(3000) replace
+
 
 
 ********************************************************************************
