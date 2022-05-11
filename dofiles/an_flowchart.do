@@ -71,7 +71,7 @@ post `memhold' ("`stat'") 	(`tabord') ///
 			   (`totsoci') 	(`totsocibrack') 
 			   
 * counts for exclusions
-foreach stat in flag_mat_white_eth flag_nomiss_mateth flag_alive1yr flag_singleton	flag_outcomeany flag_exposureany {
+foreach stat in flag_alive1yr flag_singleton flag_outcomeany flag_exposureany {
 	tab `stat', matcell(matstat)
 	tab `stat' ASD, 		matcell(matstatASD)  mis
 	tab `stat' bin_scdc, 	matcell(matstatscdc) mis 
@@ -107,7 +107,6 @@ foreach stat in flag_mat_white_eth flag_nomiss_mateth flag_alive1yr flag_singlet
 
 
 * remaining after exclusions
-keep if flag_mat_white_eth 	== 1
 keep if flag_alive1yr 		== 1
 keep if flag_singleton		== 1
 keep if flag_outcomeany 	== 1

@@ -51,7 +51,7 @@ merge 1:1 aln using "\\ads.bris.ac.uk\Filestore\SSCM ALSPAC\Data\Current\Quest\M
 merge 1:1 aln using "\\ads.bris.ac.uk\Filestore\SSCM ALSPAC\Data\Current\Quest\Mother\h_6d.dta", nogen
 merge 1:1 aln using "\\ads.bris.ac.uk\Filestore\SSCM ALSPAC\Data\Useful_data\bestgest\bestgest.dta", nogen
 
-keep aln mz001 mz010a mz013 mz014 mz028b ///
+keep aln mz001 mz010a mz013 mz014 mz023 mz024a mz024b mz028b ///
 a006 a525 ///
 b032 b371 b650 b653 b659 b663 - b667 b670 b671 b721 b724 ///
 c373 c3834 c525 c645a c666a c755 c765 c765 c800 - c804 ///
@@ -89,11 +89,9 @@ sort aln
 gen in_mz=1
 merge 1:1 aln using "\\ads.bris.ac.uk\Filestore\SSCM ALSPAC\Data\Useful_data\bestgest\bestgest.dta", nogen
 merge 1:1 aln using "\\ads.bris.ac.uk\Filestore\SSCM ALSPAC\Data\Current\Other\Samples\Mother\Mother_samples_5b.dta", nogen
-merge 1:1 aln using "$Rawdatdir\VitD_postwoc.dta", nogen
 
 keep aln mz001 mz010a ///
 VitDd2_preg VitDd3_preg VitDtot_preg VitD_gest VitDt_FOM* crp_FOM* ///
-sa_MattotvitDnMol_Sm ///
 bestgest
 
 * Removing withdrawl of consent cases *** FOR LARGE DATASETS THIS CAN TAKE A FEW MINUTES
@@ -159,15 +157,20 @@ use "\\ads.bris.ac.uk\Filestore\SSCM ALSPAC\Data\Current\Other\Sample Definition
 sort aln qlet
 gen in_kz=1
 merge 1:1 aln qlet using "\\ads.bris.ac.uk\Filestore\SSCM ALSPAC\Data\Current\Other\cohort profile\cp_2b.dta", nogen
+merge 1:1 aln qlet using "\\ads.bris.ac.uk\Filestore\SSCM ALSPAC\Data\Current\Quest\Child Based\kg_5a.dta", nogen
+merge 1:1 aln qlet using "\\ads.bris.ac.uk\Filestore\SSCM ALSPAC\Data\Current\Quest\Child Based\kr_2a.dta", nogen
+merge 1:1 aln qlet using "\\ads.bris.ac.uk\Filestore\SSCM ALSPAC\Data\Current\Quest\Child Based\ku_r2b.dta", nogen
+merge 1:1 aln qlet using "\\ads.bris.ac.uk\Filestore\SSCM ALSPAC\Data\Current\Quest\Child Based\kn_2a.dta", nogen
 merge 1:1 aln qlet using "\\ads.bris.ac.uk\Filestore\SSCM ALSPAC\Data\Current\Quest\Schools\sabc_1e.dta", nogen
-merge 1:1 aln qlet using "\\ads.bris.ac.uk\Filestore\SSCM ALSPAC\Data\Useful_data\autistic traits\autistic_traits_12.dta", nogen
+merge 1:1 aln qlet using "\\ads.bris.ac.uk\Filestore\SSCM ALSPAC\Data\Current\Other\Longitudinal\cLon_1a.dta", nogen
 merge 1:1 aln qlet using "$Rawdatdir\autistic traits and ASD diagnoses_hh20170405.dta", nogen
 
 
 keep aln qlet kz011b kz021 kz030 ///
+kr554b ku506b kn3110-kn3112 kn5140 kg623b ///
 sabc010-sabc012 sa031 sa031a sa060 sa061 ///
-fm ///
-scdc coherence repbehaviour sociability autism_new autism_new_confirmed_hh ///
+clon200-clon207 ///
+autism_new autism_new_confirmed_hh ///
 in_core in_alsp in_phase2 in_phase3 in_phase4 tripquad
 
 

@@ -5,7 +5,7 @@
 ******************************************************************************
 clear 
 
-global Projectdir "YourPathNameHere"
+global Projectdir "REPLACE WITH YOUR DIRECTORY"
 
 global Dodir 		"$Projectdir\dofiles"
 global Logdir 		"$Projectdir\logfiles"

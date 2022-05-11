@@ -1,3 +1,4 @@
+capture log close
 log using "$Logdir\LOG_an_desc_PRS_conf.txt", text replace
 ********************************************************************************
 * Author: 		Paul Madley-Dowd
@@ -15,14 +16,10 @@ log using "$Logdir\LOG_an_desc_PRS_conf.txt", text replace
 cd "$Datadir\MR_sensitivity"
 use "$Datadir\DERIVED_VitD_dat.dta", clear
 
-keep if flag_mat_white_eth 	== 1
-keep if flag_alive1yr 		== 1
-keep if flag_singleton		== 1
-keep if flag_outcomeany 	== 1
-keep if miss_exposure		== 0 
+keep if flag_inclusion 		== 1
+keep if flag_mPRS_avail		== 1 // all those with available PRS information are of european ancestry 
 
-
-			
+		
 			
 ********************************************************************************
 * 2 Assess association between risk score and categorical confounders 
@@ -41,7 +38,7 @@ foreach stat in male parity_cat mat_smok_bin18wk  matEdDrv finDifDrv manual  {
 	local nlevs = r(r)
 	local tabord = `tabord' + 1
 
-	regress zscore_vd_mom_prs_S13 i.`stat'
+	regress zscore_vd_mom_prs i.`stat'
 
 	forvalues lev = 1(1)`nlevs' {
 		disp `lev'
@@ -77,7 +74,7 @@ foreach stat in  matage prepregBMI {
 	local tabord = `tabord' + 1
 	local statlev = 1
 
-	regress zscore_vd_mom_prs_S13 `stat'
+	regress zscore_vd_mom_prs `stat'
 
 	local Diff   = e(b)[1,1] 
 	local LCI 	 = e(b)[1,1] - invnormal(0.975)*sqrt(e(V)[1,1])

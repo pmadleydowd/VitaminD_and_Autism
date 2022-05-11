@@ -1,3 +1,4 @@
+capture log close
 log using "$Logdir\LOG_an_incexc_desc_stats.txt", text replace
 ********************************************************************************
 * Author: Paul Madley-Dowd
@@ -7,8 +8,8 @@ log using "$Logdir\LOG_an_incexc_desc_stats.txt", text replace
 * Contents
 ************
 * 1 Create environment
-* 2 Descriptives tables for seasonally adjusted scores
-* 3 Descriptives for normally distributed variables
+* 2 Create inclusion descriptive statistics using table1_mc package 
+* 3 Create ORs for inclusion
 * create formats in each dataset
 
 ********************************************************************************
@@ -21,149 +22,101 @@ use "$Datadir\DERIVED_VitD_dat.dta", clear
 ********************************************************************************
 * 2 Descriptives tables for seasonally adjusted scores
 *******************************************************
+table1_mc,  by(flag_inclusion) ///
+				vars( /// 
+					 male bin %5.1f \ ///
+					 parity_cat cat %5.1f \ ///
+					 mat_smok_bin18wk bin %5.1f \ ///
+					 matEdDrv cat %5.1f \ ///
+					 finDifDrv bin %5.1f \ ///
+					 manual bin %5.1f \ ///
+					 matage contn %5.1f \ /// 
+					 prepregBMI contn %5.1f \ /// 
+					 sa_7wk_VitDtot_preg contn %5.1f \ /// 
+					 sa_20wk_VitDtot_preg contn %5.1f \ /// 
+					 sa_34wk_VitDtot_preg contn %5.1f \ /// 
+					 zscore_vd_mom_prs contn %5.1f \ /// 
+					 zscore_vd_child_prs contn %5.1f \ /// 
+					 ASD bin %5.1f \ ///
+					 bin_scdc bin %5.1f \ ///
+					 bin_coherence bin %5.1f \ ///
+					 bin_repbehaviour bin %5.1f \ ///
+					 bin_sociability bin %5.1f \ ///
+					 zmf_asd contn %5.1f \ /// 
+					 homeowner cat %5.1f \ /// \ /// 
+					 marital cat %5.1f \ /// 
+					) ///
+				nospace onecol missing total(before) test ///
+				saving("Desc_incexc.xlsx", replace)
+					 
+
+********************************************************************************
+* 3 Create ORs for inclusion
+*******************************************************
 capture postutil close 
 tempname memhold 
 
-postfile `memhold' str20 stat statlev tabord ///
-				   Excluded Excbrack ///
-				   Included Incbrack ///
-				   OR LCI UCI ///
-				   using "Desc_incexc_cat.dta", replace
-
-tab flag_inclusion, matcell(matInctot)
-
-local stat	 	 = "Total"
-local statlev	 = .
-local tabord     = 0
-local Excluded 	 = matInctot[1,1]
-local Excbrack = .
-local Included 	 = matInctot[2,1]
-local Incbrack = .
-local OR 		 = .
-local LCI 		 = . 
-local UCI 		 = . 
+postfile `memhold' str20 stat statlev ///
+				   incOR incLCI incUCI ///
+				   using "Desc_incexc_ORs.dta", replace
 
 
-post `memhold' ("`stat'") (`statlev') (`tabord') ///
-			   (`Excluded') (`Excbrack') ///
-			   (`Included') (`Incbrack') ///
-			   (`OR') (`LCI') (`UCI')
-
-foreach stat in male parity_cat mat_smok_bin18wk  matEdDrv finDifDrv manual ASD bin_scdc bin_coherence bin_repbehaviour bin_sociability {
-	tab `stat', mis matcell(matcountTotal)
-	local nlevs = r(r)
-
-	tab `stat' flag_inclusion, mis matcell(matcount) matrow(statlevs)
-	
-	local tabord = `tabord' + 1
-
-	forvalues lev = 1(1)`nlevs' {
-		disp `lev'
-		local statlev = statlevs[`lev',1]
+foreach stat in "male" "parity_cat" "mat_smok_bin18wk" "matEdDrv" "finDifDrv" "manual" "matage" "prepregBMI" "sa_7wk_VitDtot_10" "sa_20wk_VitDtot_10" "sa_34wk_VitDtot_10"  "zscore_vd_mom_prs" "zscore_vd_child_prs" "ASD" "bin_scdc" "bin_coherence" "bin_repbehaviour" "bin_sociability" "zmf_asd" "homeowner" "marital" {
+	disp "stat = `stat'"	
 		
-		local Total		 = matcountTotal[`lev',1] 
-		local Totalbrack = 100*matcountTotal[`lev',1] /_N
-		
-		local Excluded 	 = matcount[`lev',1]
-		local Excbrack	 = 100*matcount[`lev',1]/matInctot[1,1]
-		local Included 	 = matcount[`lev',2]
-		local Incbrack 	 = 100*matcount[`lev',2]/matInctot[2,1]
-		
-		logistic flag_inclusion i.`stat'
-		local OR     = exp(e(b)[1,`lev']) 
-		local LCI 	 = exp(e(b)[1,`lev'] - invnormal(0.975)*sqrt(e(V)[`lev',`lev']))
-		local UCI 	 = exp(e(b)[1,`lev'] + invnormal(0.975)*sqrt(e(V)[`lev',`lev']))
+	if "`stat'" == "male" | "`stat'" == "parity_cat" | "`stat'" == "mat_smok_bin18wk" | "`stat'" == "matEdDrv" | "`stat'" == "finDifDrv" | "`stat'" == "manual" | "`stat'" == "ASD" | "`stat'" == "bin_scdc" | "`stat'" == "bin_coherence" | "`stat'" == "bin_repbehaviour" | "`stat'" == "bin_sociability" | "`stat'" == "homeowner" | "`stat'" == "marital" {
+		tab `stat', matcell(matcountTotal)
+		local nlevs = r(r)
+		tab `stat' flag_cca_asd,  matcell(matcountasd) matrow(statlevs)
 
-	
-		post `memhold' ("`stat'") (`statlev') (`tabord') ///
-					   (`Excluded') (`Excbrack') ///
-					   (`Included') (`Incbrack') ///
-					   (`OR') (`LCI') (`UCI')
-	
+		logistic flag_cca_asd i.`stat'		
 
+		forvalues lev = 1(1)`nlevs' {
+			disp `lev'
+			local statlev = statlevs[`lev',1]
+			
+			local incOR    	 = exp(e(b)[1,`lev']) 
+			local incLCI 	 = exp(e(b)[1,`lev'] - invnormal(0.975)*sqrt(e(V)[`lev',`lev']))
+			local incUCI 	 = exp(e(b)[1,`lev'] + invnormal(0.975)*sqrt(e(V)[`lev',`lev']))
+
+			
+			post `memhold' ("`stat'") (`statlev') ///
+						   (`incOR')  (`incLCI')  (`incUCI')  
+
+		}
+	}
+	else if "`stat'" == "matage" | "`stat'" == "prepregBMI" | "`stat'" == "sa_7wk_VitDtot_10" | "`stat'" == "sa_20wk_VitDtot_10" | "`stat'" == "sa_34wk_VitDtot_10" | "`stat'" == "zscore_vd_mom_prs" | "`stat'" == "zscore_vd_child_prs" | "`stat'" == "zmf_asd"  {
+		
+		logistic flag_cca_asd `stat'
+		local incOR    	 = exp(e(b)[1,1]) 
+		local incLCI 	 = exp(e(b)[1,1] - invnormal(0.975)*sqrt(e(V)[1,1]))
+		local incUCI 	 = exp(e(b)[1,1] + invnormal(0.975)*sqrt(e(V)[1,1]))
+
+		
+		
+			post `memhold' ("`stat'") (0) ///
+						   (`incOR')  (`incLCI')  (`incUCI')  
+		
 	}
 }
 
 postclose `memhold'
 
 
-********************************************************************************
-* 4 Descriptives for normally distributed variables 
-*****************************************************
-capture postutil close 
-tempname memhold 
 
-local tabord = 11 // update if number of categorical variables increases
-
-postfile `memhold' str25 stat statlev tabord ///
-				   Excluded Excbrack ///
-				   Included Incbrack ///
-				   OR LCI UCI ///
-				   using "Desc_incexc_cont.dta", replace
-
-foreach stat in matage prepregBMI sadj_vitd_10 zscore_vd_mom_prs_S13  zscore_vd_child_prs_S13  zmf_asd {
-	local tabord = `tabord' + 1
-	local statlev = 1
-	
-	summarize `stat' if flag_inclusion==0
-	local Excluded		 = r(mean)
-	local Excbrack 		 = r(sd)	
-		
-	summarize `stat' if flag_inclusion==1
-	local Included 		 = r(mean)
-	local Incbrack   	 = r(sd)	
-	
-	logistic flag_inclusion `stat'
-	local OR    	 = exp(e(b)[1,1]) 
-	local LCI 	 = exp(e(b)[1,1] - invnormal(0.975)*sqrt(e(V)[1,1]))
-	local UCI 	 = exp(e(b)[1,1] + invnormal(0.975)*sqrt(e(V)[1,1]))	
-	
-	
-	
-	post `memhold' ("`stat'") (`statlev') (`tabord') ///
-				   (`Excluded') (`Excbrack') ///
-				   (`Included') (`Incbrack') ///
-				   (`OR') (`LCI') (`UCI')
-	
-}
-
-postclose `memhold'
 
 
 ********************************************************************************
 * create formats in each dataset
 **********************************
-use "Desc_incexc_cat.dta", clear
-append  using "Desc_incexc_cont.dta"
-do "$Dodir\an_desc_formats.do"
+use "Desc_incexc_ORs.dta", clear
 
+gen incORCI  = strofreal(incOR, "%5.2f") + " (" + strofreal(incLCI, "%5.2f") + "-" + strofreal(incUCI, "%5.2f") + ")" if incOR != 1
+replace incORCI = "Ref" if incORCI == ""
 
-tostring Excluded, gen(Excluded_c) force
-tostring Excluded, gen(Excluded_c_cont) format(%5.2f) force
-replace  Excluded_c=Excluded_c_cont if tabord > 11 // update #11 if number of variables changes
-tostring Excbrack, gen(Excbrack_c) format(%5.2f) force
+keep stat statlev *ORCI 
+export delim using "Desc_incexc_ORs.csv", delim(",") replace
 
-tostring Included, gen(Included_c) force
-tostring Included, gen(Included_c_cont) format(%5.2f) force
-replace  Included_c=Included_c_cont if tabord > 11 // update #11 if number of variables changes
-tostring Incbrack, gen(Incbrack_c) format(%5.2f) force
-
-
-gen outExcluded = Excluded_c if _n == 1
-replace outExcluded = Excluded_c + " (" + Excbrack_c + ")" if _n>1
-
-gen outIncluded = Included_c if _n == 1
-replace outIncluded = Included_c + " (" + Incbrack_c + ")" if _n>1
-
-
-gen ORCI  = strofreal(OR, "%5.2f") + " (" + strofreal(LCI, "%5.2f") + "-" + strofreal(UCI, "%5.2f") + ")" if _n>1 & OR != 1
-replace ORCI = "Ref" if _n>1 & ORCI == ""
-
-
-keep stat_c statlev_c out* *ORCI 
-rename out* * 
-order stat* Excluded Included ORCI
-export delim using "IncExc_data_desc.csv", delim(",") replace
 
 log close
 
