@@ -1,4 +1,4 @@
-log using "$Logdir\LOG_an_sensitivity_spline.txt", text replace
+cap log using "$Logdir\LOG_an_sensitivity_spline.txt", text replace
 
 ********************************************************************************
 * Author: 		Paul Madley-Dowd
@@ -14,7 +14,6 @@ log using "$Logdir\LOG_an_sensitivity_spline.txt", text replace
 *******************************************************************************
 ssc install xbrcspline
 
-cd "$Datadir\Spline analysis"
 use "$Datadir\DERIVED_VitD_dat.dta", clear
 
 keep if flag_inclusion 		== 1
@@ -24,6 +23,7 @@ keep if flag_inclusion 		== 1
 ********************************************************************************
 * 2 Perform spline analyses for logistic and then linear regression models
 ********************************************************************************
+set scheme s2mono
 summarize sa_20wk_VitDtot_10, det
 
 * Create splines
@@ -105,7 +105,7 @@ forvalues n=3(1)4 {
 	*/ line est1 vitd, lwidth(medium) lcolor(black) legend(off) /*
 	*/ graphregion(color(white) lwidth(large)) /*
 	*/ plotregion(color(white) icolor(white) lwidth(large)) /*
-	*/ title("Mean Autism Factor Score", size(small)) 	/*
+	*/ title("Autism Factor Mean Score", size(small)) 	/*
 	*/ xtitle("{fontface calibri:Maternal 25(OH)D (nMol/L)}" "{fontface calibri: adjusted to 20 weeks}", size(med)) /*
 	*/ ytitle("{fontface calibri:Mean difference and 95% CI}", size(medlarge)) /*
 	*/ ylabel(0.4 "{fontface calibri:0.4}" /*
